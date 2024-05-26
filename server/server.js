@@ -54,7 +54,7 @@ app.get("/dashboard", authenticateToken, async (req, res) => {
     const email = req.user.email;
     const userEntries = await UserEntries.find({ email });
     const user = await Usermodel.findOne({ email });
-    const myUser = {username: user.username, email: user.email,viewMode: user.viewMode}
+    const myUser = { username: user.username, email: user.email, viewMode: user.viewMode };
     res.json({ success: true, entries: userEntries, userInfo: myUser });
   } catch (error) {
     console.error("Error fetching entries:", error);
@@ -67,18 +67,52 @@ app.post("/Entry", authenticateToken, async (req, res) => {
     const { color, dateTime, tags, data } = req.body;
     const email = req.user.email;
 
-    const newEntry = await UserEntries.create({
-      color,
-      email,
-      dateTime,
-      tags,
-      data,
+    const formattedDate = dateTime; 
+
+    let existingEntry = await UserEntries.findOne({
+      email: email,
+      dateTime: formattedDate,
     });
 
-    res.json({ success: true, entry: newEntry });
+    if (existingEntry) {
+      existingEntry.color = color;
+      existingEntry.tags = tags;
+      existingEntry.data = data;
+      await existingEntry.save();
+
+      res.status(200).json({ message: "Entry updated successfully", entry: existingEntry });
+    } else {
+      const newEntry = await UserEntries.create({
+        color,
+        email,
+        dateTime: formattedDate,
+        tags,
+        data,
+      });
+
+      res.status(201).json({ message: "Entry created successfully", entry: newEntry });
+    }
   } catch (error) {
-    console.error("Error creating entry:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    console.error("Error processing entry:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.delete("/entry/:id", authenticateToken, async (req, res) => {
+  try {
+    const entryId = req.params.id;
+    const email = req.user.email;
+
+    const entry = await UserEntries.findOneAndDelete({ _id: entryId, email });
+
+    if (entry) {
+      res.status(200).json({ message: "Entry deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Entry not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting entry:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 

@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App.css */
+
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px; /* Width of the scrollbar */
+  }
+  
+  /* Track */
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Color of the track */
+  }
+  
+  /* Handle */
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #9a01ae; /* Color of the thumb */
+    border-radius: 10px; /* Rounded corners */
+  }
+  
+  /* Handle on hover */
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color of the thumb on hover */
+  }
+  
+  /* Hide scrollbar arrows */
+  .custom-scrollbar::-webkit-scrollbar-button {
+    display: none;
+  }
+  
+  /* For Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #86c4ff #f1f1f1;
+  }
+  
+  /* Hide scrollbar arrows for Firefox */
+  .custom-scrollbar::-webkit-scrollbar-button {
+    display: none;
+  }
+  
