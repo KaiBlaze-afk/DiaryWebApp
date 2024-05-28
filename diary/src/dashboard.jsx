@@ -217,10 +217,10 @@ const Dashboard = () => {
             <div className="score bg-slate-50 h-60 w-40 flex items-center justify-around flex-col rounded-lg">
               <div className="text-xl underline mt-2">Your Record</div>
               <ul className="flex items-center justify-around flex-col h-[80%]">
-                <li>Words: 98</li>
-                <li>Entries: 445</li>
-                <li>Streak: 54</li>
-                <li>Tags Used: 12</li>
+                <li>Words: 128</li>
+                <li>Entries: 2</li>
+                <li>Streak: 1</li>
+                <li>Tags Used: 5</li>
               </ul>
             </div>
             <button
