@@ -5,7 +5,17 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        ole: ['"Ole"', 'cursive'],
+      },
+      fontWeight: {
+        'ole-regular': 400,
+      },
+      fontStyle: {
+        'ole-normal': 'normal',
+      },
+    },
   },
   plugins: [],
 }

@@ -8,7 +8,7 @@ import "react-day-picker/dist/style.css";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [entries, setEntries] = useState([]);
-  const [editMode, seteditMode] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [userInfo, setUserInfo] = useState({});
   const [formData, setFormData] = useState({
     color: "",
@@ -16,7 +16,20 @@ const Dashboard = () => {
     tags: [],
     data: "",
   });
-  const [Dateselected, setDateSelected] = useState();
+  const [Dateselected, setDateSelected] = useState(new Date());
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState("");
+
+  const handleAddTag = () => {
+    if (tagInput.trim() !== "") {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
 
   function getDayName(dateString) {
     const date = new Date(dateString);
@@ -42,7 +55,9 @@ const Dashboard = () => {
         },
       })
       .then((response) => {
-        const sortedEntries = response.data.entries.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        const sortedEntries = response.data.entries.sort(
+          (a, b) => new Date(b.dateTime) - new Date(a.dateTime)
+        );
         setEntries(sortedEntries);
         setUserInfo(response.data.userInfo);
         console.log(response.data);
@@ -63,22 +78,22 @@ const Dashboard = () => {
         <div
           className={`card ${
             bgColor == 1
-            ? "bg-[#F2F3E9]" 
-            : bgColor == 2
-            ? "bg-[#E9FDDD]"  
-            : bgColor == 3
-            ? "bg-[#F8DDFD]"  
-            : bgColor == 4
-            ? "bg-[#DFFFD6]"  
-            : bgColor == 5
-            ? "bg-[#FFD5E9]"  
-            : bgColor == 6
-            ? "bg-[#D6EFFF]"  
-            : bgColor == 7
-            ? "bg-[#FFF2CC]"  
-            : bgColor == 8
-            ? "bg-[#D6FFFA]"
-            : "bg-[#DAF0FF]"      
+              ? "bg-[#F2F3E9]"
+              : bgColor == 2
+              ? "bg-[#E9FDDD]"
+              : bgColor == 3
+              ? "bg-[#F8DDFD]"
+              : bgColor == 4
+              ? "bg-[#DFFFD6]"
+              : bgColor == 5
+              ? "bg-[#FFD5E9]"
+              : bgColor == 6
+              ? "bg-[#D6EFFF]"
+              : bgColor == 7
+              ? "bg-[#FFF2CC]"
+              : bgColor == 8
+              ? "bg-[#D6FFFA]"
+              : "bg-[#DAF0FF]"
           } rounded-lg p-2 my-2`}
         >
           <div className="headOfCard flex justify-between">
@@ -132,7 +147,7 @@ const Dashboard = () => {
       const accessToken = localStorage.getItem("Diary_accessToken");
       const response = await axios.post(
         "http://localhost:3001/Entry",
-        formData,
+        { ...formData, tags },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -140,18 +155,39 @@ const Dashboard = () => {
         }
       );
       console.log("Data posted successfully:", response.data);
-      setEntries([...entries, response.data.entry].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime)));
+      setEntries(
+        [...entries, response.data.entry].sort(
+          (a, b) => new Date(b.dateTime) - new Date(a.dateTime)
+        )
+      );
     } catch (error) {
       console.error("Error posting data:", error);
     }
     handleMode();
   };
+
   const handleMode = () => {
-    seteditMode(!editMode);
+    setEditMode(!editMode);
+    if (!editMode) {
+      const today = new Date();
+      setFormData((prevData) => ({
+        ...prevData,
+        dateTime: today.toISOString(),
+      }));
+      setDateSelected(today);
+    }
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleDateSelect = (date) => {
+    setDateSelected(date);
+    setFormData((prevData) => ({
+      ...prevData,
+      dateTime: date.toISOString(),
+    }));
   };
 
   const logout = (e) => {
@@ -222,7 +258,7 @@ const Dashboard = () => {
                   toYear={2024}
                   mode="single"
                   selected={Dateselected}
-                  onSelect={setDateSelected}
+                  onSelect={handleDateSelect}
                 />
                 <button className="py-2 w-full bg-teal-200 mb-5 rounded-lg">
                   Reset
@@ -267,57 +303,117 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className={editMode ? "block" : "hidden"}>
-        <h1>Create New Entry</h1>
-
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="color">Color:</label>
-            <input
-              type="text"
-              id="color"
-              name="color"
-              value={formData.color}
-              onChange={handleChange}
-            />
+      <div
+        className={
+          editMode
+            ? "bg-black flex items-center justify-center h-screen"
+            : "hidden"
+        }
+      >
+        <div className="bg-gradient-to-b from-[#005DB3] to-[#00D1FF] w-[70vw] h-[85vh] rounded-[30px] p-6">
+          <div className="bg-[#EEF6FF] rounded-3xl h-full grid grid-rows-6 overflow-hidden">
+            <div className="header row-span-1 flex justify-between items-center pt-4 px-6">
+              <div className="date">
+                <span className="text-4xl">
+                  {Dateselected.getDate().toString().padStart(2, "0")}/
+                  {(Dateselected.getMonth() + 1).toString().padStart(2, "0")}
+                </span>{" "}
+                <span>{getDayName(Dateselected)}</span>
+              </div>
+              <div className="banner font-ole text-6xl">It's our Secret...</div>
+            </div>
+            <div className="main row-span-5 bg-[#EEF6FF] grid grid-cols-7 h-full pb-6 pl-6">
+              <div className="contentEntry col-span-6 border-2 border-black rounded-lg flex flex-col">
+                <div className="bg-white px-6 py-2 flex justify-between">
+                  <ul className="flex space-x-4">
+                    {tags.map((tag, index) => (
+                      <li
+                        key={index}
+                        className="text-xs text-white bg-[#d0d0d0] px-5 rounded-xl flex items-center cursor-pointer"
+                        onClick={() => handleRemoveTag(tag)}
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="relative flex mx-6">
+                    <input
+                      type="text"
+                      className="relative m-0 block flex-auto rounded border border-solid border-blue-400 bg-transparent bg-clip-padding px-3 text-base font-normal leading-[1.6] text-surface outline-none transition duration-200 ease-in-out placeholder:text-500 focus:z-[3] focus:border-primary focus:shadow-inset focus:outline-none motion-reduce:transition-none"
+                      placeholder="Enter tag"
+                      aria-label="tag"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                    />
+                    <button onClick={handleAddTag}>➕</button>
+                  </div>
+                </div>
+                <textarea
+                  name="data"
+                  autoFocus
+                  maxLength={9999}
+                  className="outline-0 text-[#393939] resize-none flex-grow w-full rounded-md p-4 overflow-auto"
+                  value={formData.data}
+                  onChange={handleChange}
+                ></textarea>
+              </div>
+              <div className="options p-4 flex flex-col justify-between items-center">
+                <ul className="border-2 flex flex-col justify-between items-center border-gray-600">
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#F2F3E9] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 1 })}
+                  ></li>
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#E9FDDD] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 2 })}
+                  ></li>
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#F8DDFD] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 3 })}
+                  ></li>
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#DFFFD6] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 4 })}
+                  ></li>
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#FFD5E9] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 5 })}
+                  ></li>
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#D6EFFF] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 6 })}
+                  ></li>
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#FFF2CC] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 7 })}
+                  ></li>
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#D6FFFA] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 8 })}
+                  ></li>
+                  <li
+                    className="border border-black m-2 h-3 w-[4rem] bg-[#DAF0FF] cursor-pointer"
+                    onClick={() => setFormData({ ...formData, color: 9 })}
+                  ></li>
+                </ul>
+                <div className="buttons flex flex-col justify-between w-full">
+                  <button
+                    className="leave border-2 border-red-800 m-2 p-1 rounded-md text-white bg-[#FF8989]"
+                    onClick={handleMode}
+                  >
+                    Leave
+                  </button>
+                  <button
+                    className="save border-2 border-green-700 m-2 p-1 rounded-md text-white bg-[#5af24d]"
+                    onClick={handleSubmit}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <div>
-            <label htmlFor="dateTime">Date:</label>
-            <input
-              type="text"
-              id="dateTime"
-              name="dateTime"
-              value={formData.dateTime}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="tags">Tags:</label>
-            <input
-              type="text"
-              id="tags"
-              name="tags"
-              value={formData.tags.join(",")}
-              onChange={(e) =>
-                setFormData({ ...formData, tags: e.target.value.split(",") })
-              }
-            />
-          </div>
-
-          <div>
-            <label htmlFor="data">Data:</label>
-            <textarea
-              id="data"
-              name="data"
-              value={formData.data}
-              onChange={handleChange}
-            />
-          </div>
-
-          <button type="submit">Submit</button>
-        </form>
+        </div>
       </div>
     </>
   );
